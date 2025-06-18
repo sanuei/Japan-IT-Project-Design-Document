@@ -6,6 +6,11 @@
 
 **⚠️ 重要说明：** 本项目的所有设计文档均由 **Claude 4.0** 自动生成，旨在为日本IT行业的新人提供标准的设计书编写参考模板。
 
+## 🔗 项目链接
+
+- 📖 **在线文档查看器**: [https://sanuei.github.io/Sample-Japanese-Design-Document/](https://sanuei.github.io/Sample-Japanese-Design-Document/)
+- 💻 **GitHub仓库**: [https://github.com/sanuei/Sample-Japanese-Design-Document](https://github.com/sanuei/Sample-Japanese-Design-Document)
+
 ## 🎯 学习目标
 
 本项目通过实际案例帮助日本IT新人掌握：
@@ -36,9 +41,8 @@ docs/
 └── テスト戦略書.md     # 测试策略书 - 测试计划与策略
 
 進捗記録.md             # 进度记录 - 项目状态跟踪
-docs-viewer.html        # 现代化文档查看器
+index.html             # 现代化文档查看器
 README.md              # 项目说明文档
-使用说明.md             # 查看器使用指南
 ```
 
 ### 📚 文档特点
@@ -51,7 +55,12 @@ README.md              # 项目说明文档
 
 本项目提供了现代化的文档查看器，采用Apple风格设计，方便学习者浏览所有设计文档。
 
-### 方法1: 本地HTTP服务器（推荐）
+### 方法1: 在线访问（最简单）
+
+直接访问在线版本，无需任何设置：
+**🌐 [https://sanuei.github.io/Sample-Japanese-Design-Document/](https://sanuei.github.io/Sample-Japanese-Design-Document/)**
+
+### 方法2: 本地HTTP服务器（推荐本地开发）
 
 ```bash
 # 使用Python启动HTTP服务器
@@ -63,11 +72,11 @@ npx http-server
 # 然后访问: http://localhost:8000/docs-viewer.html
 ```
 
-### 方法2: VS Code Live Server
+### 方法3: VS Code Live Server
 
 1. 在VS Code中打开项目文件夹
 2. 安装"Live Server"扩展
-3. 右键点击`docs-viewer.html`选择"Open with Live Server"
+3. 右键点击`index.html`选择"Open with Live Server"
 
 **注意**: 直接双击HTML文件可能因浏览器CORS策略无法正常加载文档内容。
 
@@ -155,8 +164,8 @@ npx http-server
 ### 学习设计文档编写
 1. **克隆项目到本地**
    ```bash
-   git clone <repository-url>
-   cd video-script-generator
+   git clone https://github.com/sanuei/Sample-Japanese-Design-Document.git
+   cd Sample-Japanese-Design-Document
    ```
 
 2. **启动文档查看器**
@@ -165,7 +174,7 @@ npx http-server
    python -m http.server 8000
    
    # 访问文档查看器
-   # http://localhost:8000/docs-viewer.html
+   # http://localhost:8000/index.html
    ```
 
 3. **学习文档结构**

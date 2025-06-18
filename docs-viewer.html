@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动画脚本自动生成工具 - 设计文档中心</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f5f7;
+            min-height: 100vh;
+            color: #1d1d1f;
+            line-height: 1.47059;
+            font-weight: 400;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            color: #1d1d1f;
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 600;
+            letter-spacing: -0.022em;
+        }
+
+        .header p {
+            color: #86868b;
+            font-size: 0.95rem;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .progress-section {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px 32px;
+            margin: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .progress-title {
+            color: #1d1d1f;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+            letter-spacing: -0.022em;
+        }
+
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 0;
+        }
+
+        .progress-card {
+            background: #f5f5f7;
+            color: #1d1d1f;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .progress-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-card h3 {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .progress-bar {
+            background: #e5e5e7;
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #007aff;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: calc(100vh - 120px);
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #ffffff;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 32px 24px;
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            position: sticky;
+            top: 80px;
+        }
+
+        .sidebar h2 {
+            color: #1d1d1f;
+            margin-bottom: 24px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: -0.022em;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 2px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #1d1d1f;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 400;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover {
+            background: #f5f5f7;
+            color: #007aff;
+        }
+
+        .nav-link.active {
+            background: #007aff;
+            color: white;
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            width: 16px;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .nav-link span:first-of-type {
+            flex: 1;
+        }
+
+        .content-area {
+            flex: 1;
+            background: #ffffff;
+            padding: 48px 64px;
+            overflow-y: auto;
+            height: calc(100vh - 120px);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .content-area h1 {
+            color: #1d1d1f;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 32px;
+            margin-top: 0;
+        }
+
+        .content-area h2 {
+            color: #1d1d1f;
+            font-size: 1.75rem;
+            font-weight: 600;
+            letter-spacing: -0.022em;
+            margin-top: 48px;
+            margin-bottom: 16px;
+        }
+
+        .content-area h3 {
+            color: #1d1d1f;
+            font-size: 1.375rem;
+            font-weight: 600;
+            letter-spacing: -0.022em;
+            margin-top: 32px;
+            margin-bottom: 12px;
+        }
+
+        .content-area h4 {
+            color: #1d1d1f;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 8px;
+        }
+
+        .content-area pre {
+            background: #f5f5f7;
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 24px 0;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .content-area code {
+            background: #f5f5f7;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .content-area table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 32px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e5e5e7;
+        }
+
+        .content-area th,
+        .content-area td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        .content-area th {
+            background: #f5f5f7;
+            font-weight: 600;
+            color: #1d1d1f;
+            font-size: 0.95rem;
+        }
+
+        .content-area ul, .content-area ol {
+            margin: 20px 0;
+            padding-left: 24px;
+        }
+
+        .content-area li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .content-area p {
+            line-height: 1.6;
+            margin: 20px 0;
+            color: #1d1d1f;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #718096;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .status-completed {
+            background: #d1f2eb;
+            color: #00783e;
+        }
+
+        .status-pending {
+            background: #fff4e6;
+            color: #bf5700;
+        }
+
+        .welcome-content {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .welcome-content h2 {
+            color: #2d3748;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .welcome-content p {
+            color: #718096;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: #f5f5f7;
+            color: #1d1d1f;
+            padding: 32px 24px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card i {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            color: #007aff;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1d1d1f;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #feb2b2;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                top: 0;
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                padding: 24px;
+            }
+
+            .content-area {
+                height: auto;
+                padding: 32px 24px;
+            }
+
+            .header {
+                padding: 16px 24px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .progress-section {
+                margin: 16px;
+                padding: 20px 24px;
+            }
+
+            .progress-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            body {
+                padding-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div>
+                    <h1>动画脚本自动生成工具</h1>
+                    <p>基于思维导图的AI驱动视频脚本生成系统</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <div class="progress-title">
+                项目进展概览
+            </div>
+            <div class="progress-grid">
+                <div class="progress-card">
+                    <h3>设计阶段</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                    <p>100% 已完成</p>
+                </div>
+                <div class="progress-card">
+                    <h3>开发阶段</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <p>0% 待开始</p>
+                </div>
+                <div class="progress-card">
+                    <h3>测试阶段</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <p>0% 待开始</p>
+                </div>
+                <div class="progress-card">
+                    <h3>部署阶段</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <p>0% 待开始</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar Navigation -->
+            <div class="sidebar">
+                <h2>文档导航</h2>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <div class="nav-link active" onclick="showWelcome()">
+                            <i class="fas fa-home"></i>
+                            <span>项目概览</span>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="nav-link" onclick="loadDocument('進捗記録.md')">
+                            <i class="fas fa-tasks"></i>
+                            <span>进度记录</span>
+                            <span class="status-badge status-completed">完成</span>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="nav-link" onclick="loadDocument('docs/基本設計書.md')">
+                            <i class="fas fa-sitemap"></i>
+                            <span>基本设计书</span>
+                            <span class="status-badge status-completed">完成</span>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="nav-link" onclick="loadDocument('docs/詳細設計書.md')">
+                            <i class="fas fa-cogs"></i>
+                            <span>详细设计书</span>
+                            <span class="status-badge status-completed">完成</span>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="nav-link" onclick="loadDocument('docs/API仕様書.md')">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>API规格书</span>
+                            <span class="status-badge status-completed">完成</span>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="nav-link" onclick="loadDocument('docs/データベース設計書.md')">
+                            <i class="fas fa-database"></i>
+                            <span>数据库设计书</span>
+                            <span class="status-badge status-completed">完成</span>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <div class="nav-link" onclick="loadDocument('docs/テスト戦略書.md')">
+                            <i class="fas fa-vial"></i>
+                            <span>测试策略书</span>
+                            <span class="status-badge status-completed">完成</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area" id="content-area">
+                <div class="welcome-content">
+                    <h2>欢迎访问设计文档中心</h2>
+                    <p>这里汇集了动画脚本自动生成工具的所有设计文档。点击左侧导航菜单查看各个设计书的详细内容。</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <i class="fas fa-brain"></i>
+                            <h3>AI驱动</h3>
+                            <p>基于大型语言模型的智能脚本生成</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-project-diagram"></i>
+                            <h3>思维导图</h3>
+                            <p>直观的思维导图编辑器</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-scroll"></i>
+                            <h3>提词器</h3>
+                            <p>专业的视频录制提词功能</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-lightbulb"></i>
+                            <h3>灵感推荐</h3>
+                            <p>AI驱动的内容灵感推荐系统</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showWelcome() {
+            document.getElementById('content-area').innerHTML = `
+                <div class="welcome-content">
+                    <h1>设计文档中心</h1>
+                    <p style="font-size: 1.125rem; color: #86868b; margin-bottom: 48px;">这里汇集了动画脚本自动生成工具的所有设计文档。点击左侧导航菜单查看各个设计书的详细内容。</p>
+                    
+                    <h2 style="margin-top: 48px; color: #1d1d1f; font-size: 1.75rem; font-weight: 600;">📋 项目文档总览</h2>
+                    <div style="text-align: left; max-width: none; margin: 0;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-top: 32px;">
+                            <div style="background: #f5f5f7; padding: 24px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                <h4 style="color: #1d1d1f; margin-bottom: 12px; font-size: 1.125rem; font-weight: 600;"><i class="fas fa-tasks" style="color: #007aff; margin-right: 8px;"></i> 进度记录</h4>
+                                <p style="color: #86868b; margin: 0; line-height: 1.5;">项目整体进展、完成状态、下一步计划</p>
+                            </div>
+                            <div style="background: #f5f5f7; padding: 24px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                <h4 style="color: #1d1d1f; margin-bottom: 12px; font-size: 1.125rem; font-weight: 600;"><i class="fas fa-sitemap" style="color: #007aff; margin-right: 8px;"></i> 基本设计书</h4>
+                                <p style="color: #86868b; margin: 0; line-height: 1.5;">系统架构、需求分析、技术选型</p>
+                            </div>
+                            <div style="background: #f5f5f7; padding: 24px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                <h4 style="color: #1d1d1f; margin-bottom: 12px; font-size: 1.125rem; font-weight: 600;"><i class="fas fa-cogs" style="color: #007aff; margin-right: 8px;"></i> 详细设计书</h4>
+                                <p style="color: #86868b; margin: 0; line-height: 1.5;">技术实现细节、组件设计规格</p>
+                            </div>
+                            <div style="background: #f5f5f7; padding: 24px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                <h4 style="color: #1d1d1f; margin-bottom: 12px; font-size: 1.125rem; font-weight: 600;"><i class="fas fa-exchange-alt" style="color: #007aff; margin-right: 8px;"></i> API规格书</h4>
+                                <p style="color: #86868b; margin: 0; line-height: 1.5;">RESTful API完整规格定义</p>
+                            </div>
+                            <div style="background: #f5f5f7; padding: 24px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                <h4 style="color: #1d1d1f; margin-bottom: 12px; font-size: 1.125rem; font-weight: 600;"><i class="fas fa-database" style="color: #007aff; margin-right: 8px;"></i> 数据库设计书</h4>
+                                <p style="color: #86868b; margin: 0; line-height: 1.5;">数据库架构、表结构、索引设计</p>
+                            </div>
+                            <div style="background: #f5f5f7; padding: 24px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0, 0, 0, 0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                <h4 style="color: #1d1d1f; margin-bottom: 12px; font-size: 1.125rem; font-weight: 600;"><i class="fas fa-vial" style="color: #007aff; margin-right: 8px;"></i> 测试策略书</h4>
+                                <p style="color: #86868b; margin: 0; line-height: 1.5;">测试计划、测试类型、质量保证</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <i class="fas fa-brain"></i>
+                            <h3>AI驱动</h3>
+                            <p>基于大型语言模型的智能脚本生成</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-project-diagram"></i>
+                            <h3>思维导图</h3>
+                            <p>直观的思维导图编辑器</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-scroll"></i>
+                            <h3>提词器</h3>
+                            <p>专业的视频录制提词功能</p>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-lightbulb"></i>
+                            <h3>灵感推荐</h3>
+                            <p>AI驱动的内容灵感推荐系统</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            setActiveNavLink('项目概览');
+        }
+
+        async function loadDocument(filename) {
+            const contentArea = document.getElementById('content-area');
+            
+            // 显示加载状态
+            contentArea.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>正在加载文档 ${filename}...</p>
+                </div>
+            `;
+
+            try {
+                // 尝试获取文件内容
+                const response = await fetch(filename);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const content = await response.text();
+                
+                // 使用marked.js将Markdown转换为HTML
+                const htmlContent = marked.parse(content);
+                contentArea.innerHTML = htmlContent;
+                
+                // 设置活动导航链接
+                const docName = filename.split('/').pop().replace('.md', '');
+                setActiveNavLink(docName);
+                
+            } catch (error) {
+                console.error('Error loading document:', error);
+                
+                // 检查是否是file://协议访问
+                const isFileProtocol = window.location.protocol === 'file:';
+                
+                contentArea.innerHTML = `
+                    <div class="error-message">
+                        <h3><i class="fas fa-exclamation-triangle"></i> 文档加载失败</h3>
+                        <p><strong>文件:</strong> ${filename}</p>
+                        <p><strong>错误:</strong> ${error.message}</p>
+                        
+                        ${isFileProtocol ? `
+                            <div style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #ffeaa7;">
+                                <h4><i class="fas fa-info-circle"></i> 检测到文件协议访问</h4>
+                                <p>您当前通过 <code>file://</code> 协议访问，浏览器安全策略阻止了文档加载。</p>
+                            </div>
+                        ` : ''}
+                        
+                        <hr style="margin: 15px 0; border: none; border-top: 1px solid #feb2b2;">
+                        <h4><i class="fas fa-tools"></i> 解决方案:</h4>
+                        
+                        <div style="background: #e8f5e8; color: #2d5016; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #28a745;">
+                            <h5>🚀 推荐方法：启动本地HTTP服务器</h5>
+                            <p><strong>步骤：</strong></p>
+                            <ol style="margin: 10px 0; padding-left: 20px;">
+                                <li>打开命令行/终端</li>
+                                <li>导航到项目目录：<code>cd /path/to/your/project</code></li>
+                                <li>启动HTTP服务器：</li>
+                            </ol>
+                            
+                            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; font-family: monospace;">
+                                # Python 3.x<br>
+                                python -m http.server 8000<br><br>
+                                # Python 2.x<br>
+                                python -m SimpleHTTPServer 8000<br><br>
+                                # Node.js<br>
+                                npx http-server<br><br>
+                                # PHP<br>
+                                php -S localhost:8000
+                            </div>
+                            
+                            <p>4. 在浏览器中访问：<code>http://localhost:8000/docs-viewer.html</code></p>
+                        </div>
+                        
+                        <div style="background: #e3f2fd; color: #0d47a1; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #2196f3;">
+                            <h5>💡 其他解决方案：</h5>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>使用VS Code的Live Server扩展</li>
+                                <li>使用其他IDE的内置服务器功能</li>
+                                <li>将文件部署到任何Web服务器</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107;">
+                            <h5>⚠️ 为什么需要HTTP服务器？</h5>
+                            <p>现代浏览器的CORS（跨域资源共享）安全策略阻止 <code>file://</code> 协议的页面使用JavaScript加载其他本地文件。通过HTTP服务器访问可以解决这个限制。</p>
+                        </div>
+                        
+                        <p style="margin-top: 20px;"><strong>当前访问方式:</strong> <code>${window.location.protocol}//${window.location.host}${window.location.pathname}</code></p>
+                        
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button onclick="location.reload()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-refresh"></i> 刷新页面
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function setActiveNavLink(docName) {
+            // 移除所有活动状态
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // 设置当前活动状态
+            document.querySelectorAll('.nav-link').forEach(link => {
+                const linkText = link.textContent || link.innerText;
+                if (linkText.includes('项目概览') && docName === '项目概览') {
+                    link.classList.add('active');
+                } else if (linkText.includes('进度记录') && docName === '进捗記録') {
+                    link.classList.add('active');
+                } else if (linkText.includes('基本设计书') && docName === '基本設計書') {
+                    link.classList.add('active');
+                } else if (linkText.includes('详细设计书') && docName === '詳細設計書') {
+                    link.classList.add('active');
+                } else if (linkText.includes('API规格书') && docName === 'API仕様書') {
+                    link.classList.add('active');
+                } else if (linkText.includes('数据库设计书') && docName === 'データベース設計書') {
+                    link.classList.add('active');
+                } else if (linkText.includes('测试策略书') && docName === 'テスト戦略書') {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置marked.js选项
+            if (typeof marked !== 'undefined') {
+                marked.setOptions({
+                    highlight: function(code, lang) {
+                        return code;
+                    },
+                    breaks: true,
+                    gfm: true
+                });
+            }
+            
+            // 检查是否通过file://协议访问
+            if (window.location.protocol === 'file:') {
+                showFileProtocolWarning();
+            }
+        });
+        
+        function showFileProtocolWarning() {
+            const warningBanner = document.createElement('div');
+            warningBanner.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+                color: white;
+                padding: 15px;
+                text-align: center;
+                font-weight: 500;
+                z-index: 1000;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                animation: slideDown 0.5s ease-out;
+            `;
+            
+            warningBanner.innerHTML = `
+                <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>⚠️ 检测到文件协议访问！文档功能可能无法正常工作。</span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="showHttpServerGuide()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                            📖 查看解决方案
+                        </button>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // 添加动画样式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideDown {
+                    from { transform: translateY(-100%); }
+                    to { transform: translateY(0); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // 调整body的padding-top以避免遮挡内容
+            document.body.style.paddingTop = '70px';
+            
+            document.body.insertBefore(warningBanner, document.body.firstChild);
+        }
+        
+        function showHttpServerGuide() {
+            document.getElementById('content-area').innerHTML = `
+                <div style="max-width: 800px; margin: 0 auto;">
+                    <h1><i class="fas fa-server"></i> HTTP服务器设置指南</h1>
+                    <p style="font-size: 1.1rem; color: #666; margin-bottom: 30px;">按照以下步骤启动本地HTTP服务器，即可正常使用文档查看功能。</p>
+                    
+                    <div style="background: #e8f5e8; color: #2d5016; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #28a745;">
+                        <h3><i class="fas fa-terminal"></i> 方法一：Python HTTP服务器（推荐）</h3>
+                        <p><strong>步骤：</strong></p>
+                        <ol style="line-height: 1.8;">
+                            <li>打开命令行/终端（Windows: cmd/PowerShell, Mac/Linux: Terminal）</li>
+                            <li>使用 <code>cd</code> 命令导航到项目目录</li>
+                            <li>运行以下命令之一：</li>
+                        </ol>
+                        
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #dee2e6;">
+                            <div style="font-family: 'Courier New', monospace; font-size: 14px;">
+                                <div style="color: #6c757d;"># Python 3.x（推荐）</div>
+                                <div style="color: #007bff; font-weight: bold;">python -m http.server 8000</div>
+                                <br>
+                                <div style="color: #6c757d;"># Python 2.x</div>
+                                <div style="color: #007bff; font-weight: bold;">python -m SimpleHTTPServer 8000</div>
+                            </div>
+                        </div>
+                        
+                        <p>4. 在浏览器中访问：<code style="background: #fff; padding: 2px 6px; border-radius: 3px; border: 1px solid #ccc;">http://localhost:8000/docs-viewer.html</code></p>
+                    </div>
+                    
+                    <div style="background: #e3f2fd; color: #0d47a1; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #2196f3;">
+                        <h3><i class="fas fa-code"></i> 方法二：Node.js HTTP服务器</h3>
+                        <p>如果您安装了Node.js：</p>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #dee2e6;">
+                            <div style="font-family: 'Courier New', monospace; font-size: 14px;">
+                                <div style="color: #007bff; font-weight: bold;">npx http-server</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #fff3cd; color: #856404; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #ffc107;">
+                        <h3><i class="fas fa-lightbulb"></i> 方法三：IDE扩展</h3>
+                        <ul style="line-height: 1.8;">
+                            <li><strong>VS Code:</strong> 安装 "Live Server" 扩展，右键HTML文件选择 "Open with Live Server"</li>
+                            <li><strong>WebStorm:</strong> 右键HTML文件选择 "Open in Browser"</li>
+                            <li><strong>Sublime Text:</strong> 安装 "Browser Sync" 插件</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; border: 1px solid #dee2e6;">
+                        <h3><i class="fas fa-question-circle"></i> 为什么需要HTTP服务器？</h3>
+                        <p style="line-height: 1.7;">现代浏览器实施了严格的CORS（跨域资源共享）安全策略。当通过 <code>file://</code> 协议直接打开HTML文件时，浏览器会阻止JavaScript使用 <code>fetch()</code> 或 <code>XMLHttpRequest</code> 加载其他本地文件，这是为了防止潜在的安全风险。</p>
+                        <p style="line-height: 1.7;">通过HTTP服务器访问页面可以绕过这个限制，让文档查看器正常工作。</p>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <button onclick="showWelcome()" style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; margin-right: 10px;">
+                            <i class="fas fa-home"></i> 返回首页
+                        </button>
+                        <button onclick="location.reload()" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px;">
+                            <i class="fas fa-refresh"></i> 刷新页面
+                        </button>
+                    </div>
+                </div>
+            `;
+            setActiveNavLink('HTTP服务器指南');
+        }
+    </script>
+</body>
+</html> 
